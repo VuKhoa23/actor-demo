@@ -17,6 +17,7 @@ func (s *Server) createActorHandler(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&actorReq); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	actor, err := s.db.CreateActor(actorReq)
@@ -44,6 +45,7 @@ func (s *Server) getActorHandler(c *gin.Context) {
 
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New("id is required").Error()})
+		return
 	}
 
 	parsedId, err := strconv.Atoi(rawId)
@@ -65,6 +67,7 @@ func (s *Server) updateActorHandler(c *gin.Context) {
 
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New("id is required").Error()})
+		return
 	}
 
 	parsedId, err := strconv.Atoi(rawId)
@@ -95,6 +98,7 @@ func (s *Server) deleteActorHandler(c *gin.Context) {
 
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New("id is required").Error()})
+		return
 	}
 
 	parsedId, err := strconv.Atoi(rawId)
