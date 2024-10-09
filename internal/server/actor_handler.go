@@ -34,10 +34,10 @@ func (s *Server) getAllActorHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if actors == nil {
+	if len(actors) == 0 {
 		actors = []model.Actor{}
 	}
-	c.JSON(http.StatusOK, actors)
+	c.JSON(http.StatusOK, model.HttpResponse[[]model.Actor]{Message: "Success", Data: &actors})
 }
 
 func (s *Server) getActorHandler(c *gin.Context) {
@@ -56,6 +56,10 @@ func (s *Server) getActorHandler(c *gin.Context) {
 
 	actor, err := s.db.GetActorById(int64(parsedId))
 	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
