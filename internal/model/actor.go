@@ -20,8 +20,3 @@ type Actor struct {
 	LastName  null.String `db:"last_name" json:"lastName"`
 	UpdatedAt null.Time   `db:"last_update" json:"updatedAt"`
 }
-
-type HttpResponse[T any] struct {
-	Message string `json:"message"`
-	Data    *T     `json:"data"`
-}

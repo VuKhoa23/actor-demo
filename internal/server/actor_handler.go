@@ -2,7 +2,6 @@ package server
 
 import (
 	"actor-demo/internal/model"
-	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -16,74 +15,74 @@ func (s *Server) createActorHandler(c *gin.Context) {
 	var actorReq model.ActorRequest
 
 	if err := c.ShouldBindJSON(&actorReq); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
 
 	actor, err := s.db.CreateActor(actorReq)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, actor)
+	c.JSON(http.StatusCreated, model.HttpResponse[model.Actor]{Data: &actor, Success: true})
 }
 
 func (s *Server) getAllActorHandler(c *gin.Context) {
 	actors, err := s.db.GetAllActor()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
 	if len(actors) == 0 {
 		actors = []model.Actor{}
 	}
-	c.JSON(http.StatusOK, model.HttpResponse[[]model.Actor]{Message: "Success", Data: &actors})
+	c.JSON(http.StatusOK, model.HttpResponse[[]model.Actor]{Success: true, Data: &actors})
 }
 
 func (s *Server) getActorHandler(c *gin.Context) {
 	rawId, exists := c.Params.Get("id")
 
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New("id is required").Error()})
+		c.JSON(http.StatusBadRequest, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: "ID is required"})
 		return
 	}
 
 	parsedId, err := strconv.Atoi(rawId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
 
 	actor, err := s.db.GetActorById(int64(parsedId))
 	if err != nil {
 		if err.Error() == "sql: no rows in result set" {
-			c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
+			c.JSON(http.StatusOK, model.HttpResponse[model.Actor]{Data: nil, Success: true})
 			return
 		}
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, actor)
+	c.JSON(http.StatusOK, model.HttpResponse[model.Actor]{Success: true, Data: &actor})
 }
 
 func (s *Server) updateActorHandler(c *gin.Context) {
 	rawId, exists := c.Params.Get("id")
 
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New("id is required").Error()})
+		c.JSON(http.StatusBadRequest, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: "ID is required"})
 		return
 	}
 
 	parsedId, err := strconv.Atoi(rawId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
 
 	var req model.ActorRequest
 	err = c.ShouldBindJSON(&req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
 
@@ -91,30 +90,30 @@ func (s *Server) updateActorHandler(c *gin.Context) {
 
 	actor, err := s.db.UpdateActor(req)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, actor)
+	c.JSON(http.StatusOK, model.HttpResponse[model.Actor]{Success: true, Data: &actor})
 }
 
 func (s *Server) deleteActorHandler(c *gin.Context) {
 	rawId, exists := c.Params.Get("id")
 
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errors.New("id is required").Error()})
+		c.JSON(http.StatusBadRequest, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: "ID is required"})
 		return
 	}
 
 	parsedId, err := strconv.Atoi(rawId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
 
 	err = s.db.DeleteActorById(int64(parsedId))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, model.HttpResponse[model.Actor]{Data: nil, Success: false, Error: err.Error()})
 		return
 	}
-	c.JSON(http.StatusNoContent, nil)
+	c.JSON(http.StatusOK, model.HttpResponse[model.Actor]{Data: nil, Success: true})
 }
